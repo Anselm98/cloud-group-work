@@ -23,7 +23,7 @@ resource "aws_instance" "nginx_server" {
               </head>
               <body>
                   <h1>Bienvenue !</h1>
-                  <p>Ici ça zouk fort</p>
+                  <p>Ici on zouk fort</p>
               </body>
               </html>
               HTMLEOF
