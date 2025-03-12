@@ -1,7 +1,7 @@
 # Web server security group
 resource "aws_security_group" "web_sg" {
   name        = "web-sg"
-  description = "Allow HTTP, SSH traffic for web servers"
+  description = "Autorise HTTP et SSH  pour les serveurs web"
   vpc_id      = aws_vpc.main.id
   
   ingress {
@@ -25,7 +25,7 @@ resource "aws_security_group" "web_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic"
+    description = "Autorise tout le traffic sortant"
   }
 
   tags = {
@@ -36,7 +36,7 @@ resource "aws_security_group" "web_sg" {
 # Private instance security group
 resource "aws_security_group" "private_sg" {
   name        = "private-sg"
-  description = "Security group for private instances"
+  description = "Security group pour les instances privees"
   vpc_id      = aws_vpc.main.id
   
   ingress {
@@ -44,7 +44,7 @@ resource "aws_security_group" "private_sg" {
     to_port         = 22
     protocol        = "tcp"
     security_groups = [aws_security_group.web_sg.id]
-    description     = "SSH from web instances"
+    description     = "SSH depuis le subnet publique"
   }
   
   egress {
@@ -52,7 +52,7 @@ resource "aws_security_group" "private_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic"
+    description = "Autorise tout le traffic sortant"
   }
   
   tags = {
@@ -63,7 +63,7 @@ resource "aws_security_group" "private_sg" {
 # Database security group
 resource "aws_security_group" "db_sg" {
   name        = "db-sg"
-  description = "Security group for database instances"
+  description = "Security group pour les databases"
   vpc_id      = aws_vpc.main.id
 
   # MariaDB/MySQL standard port - allow from web server
@@ -72,7 +72,7 @@ resource "aws_security_group" "db_sg" {
     to_port         = 3306
     protocol        = "tcp"
     security_groups = [aws_security_group.web_sg.id]
-    description     = "MariaDB access from web servers"
+    description     = "MariaDB acces depuis les serveurs web"
   }
 
   # MariaDB/MySQL standard port - allow from anywhere
@@ -81,7 +81,7 @@ resource "aws_security_group" "db_sg" {
     to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "MariaDB access from Internet"
+    description = "MariaDB acces depuis Internet"
   }
 
   egress {
@@ -89,7 +89,7 @@ resource "aws_security_group" "db_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic"
+    description = "Autorise tout le traffic sortant"
   }
 
   tags = {
