@@ -3,7 +3,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
   subnet_ids = [aws_subnet.public.id, aws_subnet.private.id]
 
   tags = {
-    Name = "RDS Subnet Group"
+    Name = "RDS-SG"
   }
 }
 
@@ -28,9 +28,4 @@ resource "aws_db_instance" "db" {
   tags = {
     Name = "Base de donnee Zouk"
   }
-}
-                                                    
-output "rds_endpoint" {
-  value       = aws_db_instance.db.endpoint
-  description = "The endpoint of the RDS database"
 }
