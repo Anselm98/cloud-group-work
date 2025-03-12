@@ -32,3 +32,8 @@ output "webserver_domain_name" {
   value       = aws_instance.nginx_server.public_dns
   description = "Nom de domaine de l'instance nginx"  
 }
+
+output "rds_endpoint" {
+  value       = aws_db_instance.db.endpoint
+  description = "Point de terminaison de la base de données RDS"
+}
