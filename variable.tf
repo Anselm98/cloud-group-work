@@ -22,3 +22,8 @@ variable "image_ami" {
   default     = "ami-04b4f1a9cf54c11d0"
 }
 
+variable "db_password" {
+  description = "Password base de données"
+  type        = string
+  default     = "CHANGEME"
+}
