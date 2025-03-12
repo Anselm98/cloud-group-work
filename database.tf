@@ -14,7 +14,7 @@ resource "aws_db_instance" "db" {
   engine                 = "mariadb"
   engine_version         = "10.6"
   instance_class         = "db.t3.micro"
-  identifier             = "mydb"
+  identifier             = "dbzouk"
   username               = "admin"
   password               = var.db_password
   parameter_group_name   = "default.mariadb10.6"
