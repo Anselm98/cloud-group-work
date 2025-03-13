@@ -4,7 +4,7 @@ resource "aws_instance" "nginx_server" {
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   subnet_id              = aws_subnet.public.id
-  
+  key_name               = var.key_name
 # Put your ssh key  key_name               = ""
   
   user_data = <<-EOF
@@ -66,6 +66,7 @@ resource "aws_instance" "private_instance" {
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.private_sg.id]
   subnet_id              = aws_subnet.private.id
+  key_name               = var.key_name
 # Put your ssh key  key_name               = ""
   
   tags = {
@@ -73,6 +74,12 @@ resource "aws_instance" "private_instance" {
   }
 }
 
-resource "aws_s3_bucket" "zoukbucket" {
-  bucket = "zoukbucket"
+resource "aws_s3_bucket" "zoukbucketipssi" {
+  bucket = "zoukbucketipssi"
+}
+
+resource "aws_s3_object" "objet1" {
+  bucket = "${aws_s3_bucket.zoukbucketipssi.bucket}"
+  key    = "zouk.txt"
+  source = "zouk.txt"
 }

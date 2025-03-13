@@ -1,3 +1,9 @@
+variable "key_name" {
+  description = "Nom de la clé publique SSH sur AWS"
+  type        = string
+  default     = ""
+}
+
 variable "aws_region" {
   description = "La region ou sa va zouker"
   type        = string
