@@ -72,3 +72,7 @@ resource "aws_instance" "private_instance" {
     Name = "${var.instance_name}-private"
   }
 }
+
+resource "aws_s3_bucket" "zoukbucket" {
+  bucket = "zoukbucket"
+}
