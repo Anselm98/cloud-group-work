@@ -68,3 +68,63 @@ resource "azurerm_linux_virtual_machine" "vm" {
    version   = "latest"
   }
 }
+
+# Add a Network Security Group to allow HTTP traffic
+resource "azurerm_network_security_group" "nsg" {
+  name                = "web-nsg"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "allow-http"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  security_rule {
+    name                       = "allow-ssh"
+    priority                   = 110
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+# Associate NSG with the subnet
+resource "azurerm_subnet_network_security_group_association" "nsg_association" {
+  subnet_id                 = azurerm_subnet.subnet.id
+  network_security_group_id = azurerm_network_security_group.nsg.id
+}
+
+# Install NGINX using Custom Script Extension
+resource "azurerm_virtual_machine_extension" "nginx_install" {
+  name                 = "nginx-install"
+  virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.1"
+
+  settings = <<SETTINGS
+    {
+      "commandToExecute": "apt-get update && apt-get install -y nginx && systemctl enable nginx && systemctl start nginx"
+    }
+  SETTINGS
+
+  depends_on = [azurerm_linux_virtual_machine.vm]
+}
+
+# Output the public IP address
+output "vm_public_ip" {
+  value       = azurerm_public_ip.public_ip.ip_address
+  description = "The public IP address of the web server"
+}
