@@ -29,7 +29,7 @@ variable "resource_group_name" {
 variable "admin_username" {
   description = "Nom d'utilisateur administrateur pour la VM"
   type        = string
-  default     = "adminuser"
+  default     = "adminzoukeur"
 }
 
 variable "os_image" {
