@@ -1,29 +1,40 @@
+provider "azurerm" {
+  features {}
+
+  subscription_id = var.subscription_id
+}
+
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
-  tags     = var.tags
 }
 
 resource "azurerm_virtual_network" "vnet" {
-  name                = "${var.resource_group_name}-vnet"
+  name                = "vnet"
+  address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  address_space       = ["10.0.0.0/16"]
-  tags                = var.tags
 }
 
 resource "azurerm_subnet" "subnet" {
-  name                 = "subnet1"
+  name                 = "subnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-resource "azurerm_network_interface" "nic" {
-  name                = "vm-nic"
+resource "azurerm_public_ip" "public_ip" {
+  name                = "vm-public-ip"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  tags                = var.tags
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
+resource "azurerm_network_interface" "nic" {
+  name                = "nic"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
     name                          = "internal"
@@ -33,71 +44,47 @@ resource "azurerm_network_interface" "nic" {
   }
 }
 
-resource "azurerm_public_ip" "public_ip" {
-  name                = "vm-public-ip"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Dynamic"
-  tags                = var.tags
-}
-
-resource "azurerm_network_security_group" "vm_nsg" {
-  name                = "vm-nsg"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-
-  security_rule {
-    name                       = "SSH"
-    priority                   = 1001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-}
-
-resource "azurerm_network_interface_security_group_association" "nsg_association" {
-  network_interface_id      = azurerm_network_interface.nic.id
-  network_security_group_id = azurerm_network_security_group.vm_nsg.id
-}
-
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                  = "vm-instance"
-  location              = azurerm_resource_group.rg.location
+  name                  = "ubuntu-vm"
   resource_group_name   = azurerm_resource_group.rg.name
-  network_interface_ids = [azurerm_network_interface.nic.id]
+  location              = azurerm_resource_group.rg.location
   size                  = var.vm_size
   admin_username        = var.admin_username
-  computer_name         = "myvm"
-  tags                  = var.tags
+  network_interface_ids = [azurerm_network_interface.nic.id]
+
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = file(var.ssh_public_key_path) 
+  }
 
   os_disk {
-    name                 = "osdisk"
     caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+    storage_account_type = var.storage_account_type
+    disk_size_gb         = 30
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-noble"
-    sku       = "24_04-lts"
-    version   = "latest"
+   publisher = "Canonical"
+   offer     = var.os_image
+   sku       = "server"
+   version   = "latest"
   }
+}
 
-  os_profile {
-    computer_name  = "myvm"
-    admin_username = var.admin_username
-  }
 
-  os_profile_linux_config {
-    disable_password_authentication = true
+# Install NGINX using Custom Script Extension
+resource "azurerm_virtual_machine_extension" "nginx_install" {
+  name                 = "nginx-install"
+  virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.1"
 
-    ssh_keys = [{
-      path     = "/home/${var.admin_username}/.ssh/authorized_keys"
-      key_data = file("/home/ton-utilisateur/.ssh/key.pub")
-    }]
-  }
+  settings = <<SETTINGS
+    {
+      "commandToExecute": "apt-get update && apt-get install -y nginx && systemctl enable nginx && systemctl start nginx"
+    }
+  SETTINGS
+
+  depends_on = [azurerm_linux_virtual_machine.vm]
 }
