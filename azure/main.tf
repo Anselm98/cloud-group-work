@@ -54,17 +54,20 @@ resource "azurerm_virtual_machine" "vm" {
   storage_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    sku       = "24.04-LTS"
     version   = "latest"
   }
 
   os_profile {
-    computer_name  = "myvm"
-    admin_username = var.admin_username
-    admin_password = var.admin_password
-  }
+  computer_name  = "myvm"
+  admin_username = var.admin_username
+}
+os_profile_linux_config {
+  disable_password_authentication = true
 
-  os_profile_linux_config {
-    disable_password_authentication = false
+  ssh_keys {
+    path     = "/home/${var.admin_username}/.ssh/authorized_keys"
+    key_data = file("~/.ssh/azure_vm_key.pub")
   }
+}
 }

@@ -13,9 +13,3 @@ variable "admin_username" {
   description = "Nom d'utilisateur administrateur pour la VM"
   type        = string
 }
-
-variable "admin_password" {
-  description = "Mot de passe administrateur pour la VM"
-  type        = string
-  sensitive   = true
-}
