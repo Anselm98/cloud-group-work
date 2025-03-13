@@ -1,10 +1,12 @@
 provider "azurerm" {
   features {}
+
+  subscription_id = var.subscription_id
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = "ubuntu-rg"
-  location = "eastus"
+  name     = var.resource_group_name
+  location = var.location
 }
 
 resource "azurerm_virtual_network" "vnet" {
@@ -46,24 +48,24 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                  = "ubuntu-vm"
   resource_group_name   = azurerm_resource_group.rg.name
   location              = azurerm_resource_group.rg.location
-  size                  = "Standard_B1ls"
-  admin_username        = "adminuser"
+  size                  = var.vm_size
+  admin_username        = var.admin_username
   network_interface_ids = [azurerm_network_interface.nic.id]
 
   admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_ed25519.pub") 
+    username   = var.admin_username
+    public_key = file(var.ssh_public_key_path) 
   }
 
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+    storage_account_type = var.storage_account_type
     disk_size_gb         = 30
   }
 
   source_image_reference {
    publisher = "Canonical"
-   offer     = "ubuntu-24_04-lts"
+   offer     = var.os_image
    sku       = "server"
    version   = "latest"
   }
