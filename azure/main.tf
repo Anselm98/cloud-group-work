@@ -67,7 +67,7 @@ os_profile_linux_config {
 
   ssh_keys {
     path     = "/home/${var.admin_username}/.ssh/authorized_keys"
-    key_data = file("~/.ssh/azure_vm_key.pub")
+    key_data = file("~/.ssh/key.pub")
   }
 }
 }
