@@ -4,6 +4,12 @@ variable "key_name" {
   default     = ""
 }
 
+variable "bucket_name" {
+  description = "Nom du bucket S3"
+  type        = string
+  default     = ""  
+}
+
 variable "aws_region" {
   description = "La region ou sa va zouker"
   type        = string

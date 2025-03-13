@@ -75,7 +75,7 @@ resource "aws_instance" "private_instance" {
 }
 
 resource "aws_s3_bucket" "zoukbucketipssi" {
-  bucket = "zoukbucketipssi"
+  bucket = var.bucket_name
 }
 
 resource "aws_s3_object" "objet1" {
