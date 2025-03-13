@@ -23,7 +23,7 @@ La configuration Azure déploie :
 - Groupe de ressources
 - Réseau virtuel avec sous-réseau
 - Machine Virtuelle avec IP publique
-- Serveur NGINX installé via une Extension de Script Personnalisé
+- Serveur web NGINX
 
 ## Prérequis
 
