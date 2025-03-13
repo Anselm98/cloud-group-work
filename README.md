@@ -27,7 +27,7 @@ La configuration Azure déploie :
 
 ## Prérequis
 
-- [Terraform](https://www.terraform.io/downloads.html) installé (v1.0.0+)
+- [Terraform](https://www.terraform.io/downloads.html) installé
 - AWS CLI configuré avec des identifiants valides pour le déploiement AWS
 - Azure CLI configuré avec des identifiants valides pour le déploiement Azure
 - Paire de clés SSH pour accéder aux machines virtuelles
