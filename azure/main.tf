@@ -1,6 +1,7 @@
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
+  tags     = var.tags
 }
 
 resource "azurerm_virtual_network" "vnet" {
@@ -8,6 +9,7 @@ resource "azurerm_virtual_network" "vnet" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   address_space       = ["10.0.0.0/16"]
+  tags                = var.tags
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -21,6 +23,7 @@ resource "azurerm_network_interface" "nic" {
   name                = "vm-nic"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+  tags                = var.tags
 
   ip_configuration {
     name                          = "internal"
@@ -35,39 +38,57 @@ resource "azurerm_public_ip" "public_ip" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   allocation_method   = "Dynamic"
+  tags                = var.tags
 }
 
-resource "azurerm_virtual_machine" "vm" {
+resource "azurerm_network_security_group" "vm_nsg" {
+  name                = "vm-nsg"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "SSH"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "nsg_association" {
+  network_interface_id      = azurerm_network_interface.nic.id
+  network_security_group_id = azurerm_network_security_group.vm_nsg.id
+}
+
+resource "azurerm_linux_virtual_machine" "vm" {
   name                  = "vm-instance"
   location              = azurerm_resource_group.rg.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [azurerm_network_interface.nic.id]
-  vm_size               = "Standard_B1s"
+  size                  = var.vm_size
+  admin_username        = var.admin_username
+  computer_name         = "myvm"
+  tags                  = var.tags
 
-  storage_os_disk {
-    name              = "osdisk"
-    caching          = "ReadWrite"
-    create_option    = "FromImage"
-    managed_disk_type = "Standard_LRS"
+  os_disk {
+    name                 = "osdisk"
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
   }
 
-  storage_image_reference {
+  source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "24.04-LTS"
+    offer     = "0001-com-ubuntu-server-noble"
+    sku       = "24_04-lts"
     version   = "latest"
   }
 
-  os_profile {
-  computer_name  = "myvm"
-  admin_username = var.admin_username
-}
-os_profile_linux_config {
-  disable_password_authentication = true
-
-  ssh_keys {
-    path     = "/home/${var.admin_username}/.ssh/authorized_keys"
-    key_data = file("~/.ssh/azure_vm_key.pub")
+  admin_ssh_key {
+    username   = var.admin_username
+    public_key = file(var.ssh_public_key_path)
   }
-}
 }
