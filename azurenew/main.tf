@@ -122,9 +122,3 @@ resource "azurerm_virtual_machine_extension" "nginx_install" {
 
   depends_on = [azurerm_linux_virtual_machine.vm]
 }
-
-# Output the public IP address
-output "vm_public_ip" {
-  value       = azurerm_public_ip.public_ip.ip_address
-  description = "The public IP address of the web server"
-}
